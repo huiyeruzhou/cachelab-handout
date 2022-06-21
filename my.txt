@@ -1,0 +1,219 @@
+miss
+-524260miss
+miss
+-524261miss
+miss
+miss
+hit
+miss
+hit
+hit
+-524261hit
+hit
+miss
+hit
+hit
+hit
+hit
+hit
+miss
+hit hit
+hit
+hit
+-524261hit
+hit
+hit
+hit
+hit
+hit
+hit
+hit
+miss
+hit hit
+hit
+hit
+-524261hit
+hit
+miss
+hit
+hit
+hit
+hit
+hit
+miss eviction
+hit hit
+hit
+hit
+-524261hit
+hit
+hit
+hit
+hit
+hit
+hit
+hit
+miss
+hit hit
+hit
+hit hit
+hit
+hit
+hit
+hit
+-524261hit
+hit
+miss eviction
+hit
+hit
+hit
+hit
+hit
+hit
+hit hit
+hit
+hit
+-524261hit
+hit
+hit
+hit
+hit
+hit
+hit
+hit
+hit
+hit hit
+hit
+hit
+-524261hit
+hit
+196689miss
+hit
+hit
+hit
+hit
+hit
+hit
+hit hit
+hit
+hit
+-524261hit
+hit
+196689hit
+hit
+hit
+hit
+hit
+hit
+hit
+hit hit
+hit
+hit hit
+hit
+hit
+hit
+hit
+-524261hit
+hit
+miss eviction
+hit
+hit
+hit
+hit
+hit
+miss
+hit hit
+hit
+hit
+-524261hit
+hit
+hit
+hit
+hit
+hit
+hit
+hit
+196691miss
+hit hit
+hit
+hit
+-524261hit
+hit
+miss
+hit
+hit
+hit
+hit
+hit
+miss eviction
+hit hit
+hit
+hit
+-524261hit
+hit
+hit
+hit
+hit
+hit
+hit
+hit
+196692miss eviction
+hit hit
+hit
+hit hit
+hit
+hit
+hit
+hit
+-524261miss eviction
+hit
+miss eviction
+hit
+hit
+miss eviction
+hit
+hit
+hit
+hit hit
+hit
+hit
+-524261hit
+hit
+miss eviction
+hit
+hit
+miss eviction
+hit
+hit
+196691hit
+hit hit
+hit
+hit
+-524261hit
+hit
+196690miss eviction
+hit
+hit
+hit
+hit
+hit
+hit
+hit hit
+hit
+hit
+-524261miss eviction
+hit
+196690miss eviction
+hit
+hit
+hit
+hit
+hit
+196692miss eviction
+hit hit
+hit
+hit hit
+hit
+miss eviction
+-524260hit
+hit
+hits:207 misses:31 evictions:15

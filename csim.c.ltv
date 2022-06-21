@@ -6,59 +6,13 @@ typedef struct
 {
     int *valid;
     int *line_tags;
-    int *refer_record;
-    unsigned *line_refer_index;
+    int access_record[10];
+    int record_head;
     int record_tail;
 } cache_set;
 
 void Printhelp(void);
-void referCache(cache_set* cache, int set_index, int line_index);
-void referCache(cache_set* cache, int set_index, int line_index)
-{
-    int next = cache[set_index].record_tail;
 
-    if(next == 0)
-    {
-        cache[set_index].refer_record[0] = line_index;
-        cache[set_index].line_refer_index[line_index] = 0;
-        cache[set_index].record_tail = 1;
-        return;
-    }
-
-    int last_ref = cache[set_index].refer_record[0];
-    if(last_ref == line_index)
-    {
-        return;
-    }
-    else
-    {
-        int line_ref_index = cache[set_index].line_refer_index[line_index];
-        if(line_ref_index == (unsigned)-1)
-        {
-            for(int i = next;  i > 0; i --)
-            {
-                int change = cache[set_index].refer_record[i] = cache[set_index].refer_record[i - 1];
-                cache[set_index].line_refer_index[change] = i;
-            }
-
-            cache[set_index].refer_record[0] = line_index;
-            cache[set_index].line_refer_index[line_index] = 0;
-            cache[set_index].record_tail++;
-        }
-        else{
-        for(int i = line_ref_index; i > 0; i --)
-        {
-            int change = cache[set_index].refer_record[i] = cache[set_index].refer_record[i - 1];
-            cache[set_index].line_refer_index[change] = i;
-        }
-        cache[set_index].refer_record[0] = line_index;
-        cache[set_index].line_refer_index[line_index] = 0;
-        }
-    }
-
-
-
-}
 int main(int argc, char **argv)
 {
     // if no arg, print usage
@@ -221,13 +175,11 @@ int main(int argc, char **argv)
     {
         cache[i].valid = (int *)malloc(sizeof(int) * E);
         cache[i].line_tags = (int *)malloc(sizeof(int) * E);
-        cache[i].refer_record = (int *)malloc(sizeof(int) * E);
-        cache[i].line_refer_index = (unsigned *)malloc(sizeof(int) * E);
-        cache[i].record_tail = 0;
         for (int j = 0; j < E; j++)
         {
             cache[i].valid[j] = 0;
-            cache[i].line_refer_index[j] = (unsigned)-1;
+            cache[i].record_head = 0;
+            cache[i].record_tail = 0;
         }
     }
 
@@ -247,27 +199,22 @@ int main(int argc, char **argv)
         // skip instruction reference
         if (buf[0] != ' ')
             continue;
-        // parse reference
-        int address;
-        char type;
-        sscanf(buf + 1, "%c %x", &type, &address);
-        // parse address
-        int set_mask = (1 << s) - 1;
-        int set_index = (address >> b) & set_mask;
-        int tag = address >> (b + s);
-        
+
         // print for verbose
         if (flag_v)
         {
             buf[strlen(buf) - 1] = '\0';
-            printf("%s ", buf+1);
-            // if(set_index == 3)
-            // printf("%d",tag);
+            printf("%s ", buf);
         }
-        
-        
+        // parse reference
+        int address;
+        char type;
+        sscanf(buf + 1, "%c %x", &type, &address);
 
-        
+        // parse address
+        int set_mask = (1 << s) - 1;
+        int set_index = (address >> b) & set_mask;
+        int tag = address >> (b + s);
 
         // check for hit
         int hit_flag = 0;
@@ -276,10 +223,20 @@ int main(int argc, char **argv)
             if (cache[set_index].valid[i] == 1 && cache[set_index].line_tags[i] == tag)
             {
                 hit_flag = 1;
-                referCache(cache,set_index, i);
+                cache[set_index].access_record[cache[set_index].record_tail] = tag;
+                cache[set_index].record_tail = (cache[set_index].record_tail + 1) % 10;
+                if (cache[set_index].record_tail == cache[set_index].record_head)
+                {
+                    cache[set_index].record_head = (cache[set_index].record_head + 1) % 10;
+                }
                 if (type == 'M')
                 {
-                    referCache(cache,set_index, i);
+                    cache[set_index].access_record[cache[set_index].record_tail] = tag;
+                    cache[set_index].record_tail = (cache[set_index].record_tail + 1) % 10;
+                    if (cache[set_index].record_tail == cache[set_index].record_head)
+                    {
+                        cache[set_index].record_head = (cache[set_index].record_head + 1) % 10;
+                    }
                 }
                 break;
             }
@@ -330,7 +287,12 @@ int main(int argc, char **argv)
                 {
                     cache[set_index].valid[i] = 1;
                     cache[set_index].line_tags[i] = tag;
-                    referCache(cache,set_index, i);
+                    cache[set_index].access_record[cache[set_index].record_tail] = tag;
+                    cache[set_index].record_tail = (cache[set_index].record_tail + 1) % 10;
+                    if (cache[set_index].record_tail == cache[set_index].record_head)
+                    {
+                        cache[set_index].record_head = (cache[set_index].record_head + 1) % 10;
+                    }
 
                     cold_flag = 1;
                     if (flag_v)
@@ -351,14 +313,44 @@ int main(int argc, char **argv)
                 continue;
 
             // eviction
+            int *access_cnt = (int *)malloc(sizeof(int) * E);
+            for (int i = 0; i < E; i++)
+                access_cnt[i] = 0;
+
+            for (int i = 0; i < E; i++)
+            {
+                for (int j = cache[set_index].record_head; j % 10 != cache[set_index].record_tail % 10; j++)
+                {
+                    if (cache[set_index].access_record[j] == cache[set_index].line_tags[i])
+                    {
+                        access_cnt[i] += 1;
+                    }
+                }
+            }
+            int least = 0;
+            for (int i = 0; i < E; i++)
+            {
+                if (access_cnt[i] < access_cnt[least])
+                    least = i;
+            }
             eviction_count += 1;
-            int least = cache[set_index].refer_record[E-1];
+
             cache[set_index].line_tags[least] = tag;
-            referCache(cache, set_index, least);
+            cache[set_index].access_record[cache[set_index].record_tail] = tag;
+            cache[set_index].record_tail = (cache[set_index].record_tail + 1) % 10;
+            if (cache[set_index].record_tail == cache[set_index].record_head)
+            {
+                cache[set_index].record_head = (cache[set_index].record_head + 1) % 10;
+            }
 
             if (type == 'M')
             {
-                referCache(cache, set_index, least);
+                cache[set_index].access_record[cache[set_index].record_tail] = tag;
+                cache[set_index].record_tail = (cache[set_index].record_tail + 1) % 10;
+                if (cache[set_index].record_tail == cache[set_index].record_head)
+                {
+                    cache[set_index].record_head = (cache[set_index].record_head + 1) % 10;
+                }
             }
             if (flag_v)
             {
