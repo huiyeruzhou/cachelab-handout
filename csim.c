@@ -7,7 +7,7 @@ typedef struct
     int *valid;
     int *line_tags;
     int *refer_record;
-    unsigned *line_refer_index;
+
     int record_tail;
 } cache_set;
 
@@ -20,7 +20,7 @@ void referCache(cache_set* cache, int set_index, int line_index)
     if(next == 0)
     {
         cache[set_index].refer_record[0] = line_index;
-        cache[set_index].line_refer_index[line_index] = 0;
+
         cache[set_index].record_tail = 1;
         return;
     }
@@ -32,27 +32,32 @@ void referCache(cache_set* cache, int set_index, int line_index)
     }
     else
     {
-        int line_ref_index = cache[set_index].line_refer_index[line_index];
+        unsigned line_ref_index = (unsigned)-1;
+        for(int i = 0; i < next; i++)
+        {
+            if(cache[set_index].refer_record[i] == line_index)
+            {
+                line_ref_index = i;
+                break;
+            }
+        }
         if(line_ref_index == (unsigned)-1)
         {
             for(int i = next;  i > 0; i --)
             {
-                int change = cache[set_index].refer_record[i] = cache[set_index].refer_record[i - 1];
-                cache[set_index].line_refer_index[change] = i;
+               cache[set_index].refer_record[i] = cache[set_index].refer_record[i - 1];
             }
 
             cache[set_index].refer_record[0] = line_index;
-            cache[set_index].line_refer_index[line_index] = 0;
             cache[set_index].record_tail++;
         }
         else{
         for(int i = line_ref_index; i > 0; i --)
         {
-            int change = cache[set_index].refer_record[i] = cache[set_index].refer_record[i - 1];
-            cache[set_index].line_refer_index[change] = i;
+            cache[set_index].refer_record[i] = cache[set_index].refer_record[i - 1];
         }
         cache[set_index].refer_record[0] = line_index;
-        cache[set_index].line_refer_index[line_index] = 0;
+
         }
     }
 
@@ -222,12 +227,10 @@ int main(int argc, char **argv)
         cache[i].valid = (int *)malloc(sizeof(int) * E);
         cache[i].line_tags = (int *)malloc(sizeof(int) * E);
         cache[i].refer_record = (int *)malloc(sizeof(int) * E);
-        cache[i].line_refer_index = (unsigned *)malloc(sizeof(int) * E);
         cache[i].record_tail = 0;
         for (int j = 0; j < E; j++)
         {
             cache[i].valid[j] = 0;
-            cache[i].line_refer_index[j] = (unsigned)-1;
         }
     }
 
